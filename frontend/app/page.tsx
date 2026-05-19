@@ -145,130 +145,155 @@ export default function Home() {
   };
 
   return (
-    <MapContainer
-      ref={mapRef}
-      center={[39.8097343, -98.5556199]}
-      zoom={4}
-      style={{ height: "100vh", width: "100%" }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <Control position="topright">
-        <Box
-          component="div"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            p: 2,
-            backgroundColor: "white",
-            borderRadius: 4,
-            boxShadow: 3,
-          }}
-        >
-          <Box component="div">
-            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-              Debt Type
-            </Typography>
-            <Select
-              size="small"
-              value={mapColorActiveFilter}
-              onChange={(e) => {
-                setMapColorActiveFilter(e.target.value);
-                setActiveDataFilters((prev) => {
-                  const allFalse = Object.keys(prev).reduce((acc, key) => {
-                    acc[key] = false;
-                    return acc;
-                  }, {});
-                  const newFilters = {
-                    [e.target.value]: true,
-                  };
-                  return { ...allFalse, ...newFilters };
-                });
-                setGeoJsonRefreshKey((prev) => prev + 1);
-              }}
-              style={{ width: "100%" }}
-            >
-              {Object.keys(dataMapping).map((key) => (
-                <MenuItem key={key} value={key}>
-                  {dataLabels[key]}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
-          <Box component="div">
-            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-              Year
-            </Typography>
-            <Select
-              size="small"
-              value={activeYear}
-              onChange={(e) => {
-                setActiveYear(e.target.value);
-                setGeoJsonRefreshKey((prev) => prev + 1);
-              }}
-              style={{ width: "100%" }}
-            >
-              {[
-                "2015",
-                "2016",
-                "2017",
-                "2018",
-                "2019",
-                "2020",
-                "2021",
-                "2022",
-                "2023",
-                "2024",
-                "2025",
-              ].map((year) => (
-                <MenuItem key={year} value={year}>
-                  {year}
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
-          <Box component="div">
-            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-              Show Debt Detail
-            </Typography>
-            {Object.keys(activeDataFilters).map((key) => (
-              <Box
-                component="div"
-                key={key}
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <Checkbox
-                  size="small"
-                  checked={activeDataFilters[key]}
-                  onChange={() => {
-                    setActiveDataFilters((prev) => ({
-                      ...prev,
-                      [key]: !prev[key],
-                    }));
-                    setGeoJsonRefreshKey((prev) => prev + 1);
-                  }}
-                  sx={{ pl: 0 }}
-                />
-                <Typography sx={{ marginLeft: "5px", fontSize: "0.875rem" }}>
-                  {dataLabels[key]}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </Control>
-      {!totalLoading && (
-        <GeoJSON
-          ref={geoJsonRef}
-          key={geoJsonRefreshKey}
-          data={statesData}
-          onEachFeature={onEachFeatureHandler}
-          style={geoJsonStyle}
+    <Box component="div" sx={{ height: "100vh", width: "100%" }}>
+      <Box
+        component="div"
+        sx={{
+          position: "absolute",
+          top: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "white",
+          gap: 1,
+          p: 2,
+          borderRadius: 4,
+          boxShadow: 3,
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="h5">US Personal Debt Map</Typography>
+        <Typography variant="body1" sx={{ fontSize: "0.875rem" }}>
+          A map charting trends in personal debt from 2015 to 2025
+        </Typography>
+      </Box>
+      <MapContainer
+        ref={mapRef}
+        center={[39.8097343, -98.5556199]}
+        zoom={4}
+        style={{ height: "100vh", width: "100%" }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-      )}
-    </MapContainer>
+        <Control position="topright">
+          <Box
+            component="div"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              p: 2,
+              backgroundColor: "white",
+              borderRadius: 4,
+              boxShadow: 3,
+            }}
+          >
+            <Box component="div">
+              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+                Debt Type
+              </Typography>
+              <Select
+                size="small"
+                value={mapColorActiveFilter}
+                onChange={(e) => {
+                  setMapColorActiveFilter(e.target.value);
+                  setActiveDataFilters((prev) => {
+                    const allFalse = Object.keys(prev).reduce((acc, key) => {
+                      acc[key] = false;
+                      return acc;
+                    }, {});
+                    const newFilters = {
+                      [e.target.value]: true,
+                    };
+                    return { ...allFalse, ...newFilters };
+                  });
+                  setGeoJsonRefreshKey((prev) => prev + 1);
+                }}
+                style={{ width: "100%" }}
+              >
+                {Object.keys(dataMapping).map((key) => (
+                  <MenuItem key={key} value={key}>
+                    {dataLabels[key]}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+            <Box component="div">
+              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+                Year
+              </Typography>
+              <Select
+                size="small"
+                value={activeYear}
+                onChange={(e) => {
+                  setActiveYear(e.target.value);
+                  setGeoJsonRefreshKey((prev) => prev + 1);
+                }}
+                style={{ width: "100%" }}
+              >
+                {[
+                  "2015",
+                  "2016",
+                  "2017",
+                  "2018",
+                  "2019",
+                  "2020",
+                  "2021",
+                  "2022",
+                  "2023",
+                  "2024",
+                  "2025",
+                ].map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+            <Box component="div">
+              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+                Show Debt Detail
+              </Typography>
+              {Object.keys(activeDataFilters).map((key) => (
+                <Box
+                  component="div"
+                  key={key}
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={activeDataFilters[key]}
+                    onChange={() => {
+                      setActiveDataFilters((prev) => ({
+                        ...prev,
+                        [key]: !prev[key],
+                      }));
+                      setGeoJsonRefreshKey((prev) => prev + 1);
+                    }}
+                    sx={{ pl: 0 }}
+                  />
+                  <Typography sx={{ marginLeft: "5px", fontSize: "0.875rem" }}>
+                    {dataLabels[key]}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Control>
+        {!totalLoading && (
+          <GeoJSON
+            ref={geoJsonRef}
+            key={geoJsonRefreshKey}
+            data={statesData}
+            onEachFeature={onEachFeatureHandler}
+            style={geoJsonStyle}
+          />
+        )}
+      </MapContainer>
+    </Box>
   );
 }
