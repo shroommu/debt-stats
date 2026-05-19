@@ -3,8 +3,10 @@
 import { useJsonData } from "@/hooks/useJsonData";
 
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import Control from "react-leaflet-custom-control";
 import { statesData, stateAbbvMapping } from "./constants";
 import { useMemo, useRef, useState } from "react";
+import { Box, Checkbox, MenuItem, Select, Typography } from "@mui/material";
 
 export default function Home() {
   const {
@@ -37,16 +39,15 @@ export default function Home() {
   const mapRef = useRef(null);
 
   const [activeDataFilters, setActiveDataFilters] = useState({
-    auto: true,
-    creditCard: true,
-    mortgage: true,
-    studentLoan: true,
+    auto: false,
+    creditCard: false,
+    mortgage: false,
+    studentLoan: false,
     total: true,
   });
-
   const [activeYear, setActiveYear] = useState("2025");
-
   const [mapColorActiveFilter, setMapColorActiveFilter] = useState("total");
+  const [geoJsonRefreshKey, setGeoJsonRefreshKey] = useState(0);
 
   const dataMapping = {
     auto: autoData,
@@ -54,6 +55,14 @@ export default function Home() {
     mortgage: mortgageData,
     studentLoan: studentLoanData,
     total: totalData,
+  };
+
+  const dataLabels = {
+    auto: "Auto",
+    creditCard: "Credit Card",
+    mortgage: "Mortgage",
+    studentLoan: "Student Loan",
+    total: "Total",
   };
 
   const colorScaleMinMax = useMemo(() => {
@@ -105,6 +114,15 @@ export default function Home() {
     const stateName = feature.properties.name;
     const stateAbbv = stateAbbvMapping[stateName];
     const autoInfo = autoData ? autoData[stateAbbv][activeYear] : null;
+    const creditCardInfo = creditCardData
+      ? creditCardData[stateAbbv][activeYear]
+      : null;
+    const mortgageInfo = mortgageData
+      ? mortgageData[stateAbbv][activeYear]
+      : null;
+    const studentLoanInfo = studentLoanData
+      ? studentLoanData[stateAbbv][activeYear]
+      : null;
     const totalDebtInfo = totalData ? totalData[stateAbbv][activeYear] : null;
 
     layer.on({
@@ -116,8 +134,11 @@ export default function Home() {
     layer.bindTooltip(
       `<div>
         <p><b>${stateName}</b></p>
-        <p>Auto Debt Per Capita: $${autoInfo.toLocaleString()}</p>
-        <p>Total Debt Per Capita: $${totalDebtInfo.toLocaleString()}</p>
+        ${activeDataFilters.auto ? `<p>Auto Debt Per Capita: $${autoInfo.toLocaleString()}</p>` : ""}
+        ${activeDataFilters.creditCard ? `<p>Credit Card Debt Per Capita: $${creditCardInfo.toLocaleString()}</p>` : ""}
+        ${activeDataFilters.mortgage ? `<p>Mortgage Debt Per Capita: $${mortgageInfo.toLocaleString()}</p>` : ""}
+        ${activeDataFilters.studentLoan ? `<p>Student Loan Debt Per Capita: $${studentLoanInfo.toLocaleString()}</p>` : ""}
+        ${activeDataFilters.total ? `<p>Total Debt Per Capita: $${totalDebtInfo.toLocaleString()}</p>` : ""}
       </div>`,
       { direction: "top", opacity: 1 },
     );
@@ -134,10 +155,116 @@ export default function Home() {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      <Control position="topright">
+        <Box
+          component="div"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            p: 2,
+            backgroundColor: "white",
+            borderRadius: 4,
+            boxShadow: 3,
+          }}
+        >
+          <Box component="div">
+            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+              Debt Type
+            </Typography>
+            <Select
+              size="small"
+              value={mapColorActiveFilter}
+              onChange={(e) => {
+                setMapColorActiveFilter(e.target.value);
+                setActiveDataFilters((prev) => {
+                  const allFalse = Object.keys(prev).reduce((acc, key) => {
+                    acc[key] = false;
+                    return acc;
+                  }, {});
+                  const newFilters = {
+                    [e.target.value]: true,
+                  };
+                  return { ...allFalse, ...newFilters };
+                });
+                setGeoJsonRefreshKey((prev) => prev + 1);
+              }}
+              style={{ width: "100%" }}
+            >
+              {Object.keys(dataMapping).map((key) => (
+                <MenuItem key={key} value={key}>
+                  {dataLabels[key]}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+          <Box component="div">
+            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+              Year
+            </Typography>
+            <Select
+              size="small"
+              value={activeYear}
+              onChange={(e) => {
+                setActiveYear(e.target.value);
+                setGeoJsonRefreshKey((prev) => prev + 1);
+              }}
+              style={{ width: "100%" }}
+            >
+              {[
+                "2015",
+                "2016",
+                "2017",
+                "2018",
+                "2019",
+                "2020",
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025",
+              ].map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+          <Box component="div">
+            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+              Show Debt Detail
+            </Typography>
+            {Object.keys(activeDataFilters).map((key) => (
+              <Box
+                component="div"
+                key={key}
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Checkbox
+                  size="small"
+                  checked={activeDataFilters[key]}
+                  onChange={() => {
+                    setActiveDataFilters((prev) => ({
+                      ...prev,
+                      [key]: !prev[key],
+                    }));
+                    setGeoJsonRefreshKey((prev) => prev + 1);
+                  }}
+                  sx={{ pl: 0 }}
+                />
+                <Typography sx={{ marginLeft: "5px", fontSize: "0.875rem" }}>
+                  {dataLabels[key]}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </Control>
       {!totalLoading && (
         <GeoJSON
-          data={statesData}
           ref={geoJsonRef}
+          key={geoJsonRefreshKey}
+          data={statesData}
           onEachFeature={onEachFeatureHandler}
           style={geoJsonStyle}
         />
