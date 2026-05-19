@@ -2,7 +2,12 @@
 
 import { useJsonData } from "@/hooks/useJsonData";
 
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  AttributionControl,
+} from "react-leaflet";
 import Control from "react-leaflet-custom-control";
 import { statesData, stateAbbvMapping } from "./constants";
 import { useMemo, useRef, useState } from "react";
@@ -35,8 +40,8 @@ export default function Home() {
     error: totalError,
   } = useJsonData("/data/total_cleaned.json");
 
-  const geoJsonRef = useRef(null);
-  const mapRef = useRef(null);
+  const geoJsonRef = useRef<any>(null);
+  const mapRef = useRef<any>(null);
 
   const [activeDataFilters, setActiveDataFilters] = useState({
     auto: false,
@@ -66,9 +71,9 @@ export default function Home() {
   };
 
   const colorScaleMinMax = useMemo(() => {
-    const values = Object.values(dataMapping[mapColorActiveFilter] || {}).map(
-      (d) => d[activeYear],
-    );
+    const values = Object.values(
+      dataMapping[mapColorActiveFilter as keyof typeof dataMapping] || {},
+    ).map((d: any) => d[activeYear]);
     return [Math.min(...values.filter(Boolean)), Math.max(...values)];
   }, [mapColorActiveFilter, dataMapping, mapColorActiveFilter, activeYear]);
 
@@ -81,27 +86,37 @@ export default function Home() {
       colorScaleMinMax[0] + (colorScaleMinMax[1] - colorScaleMinMax[0]) * 0.8,
       colorScaleMinMax[1],
     ];
-    return value >= scale[5]
+    return value >= scale[4]
       ? "#bd0026"
-      : value > scale[4]
+      : value > scale[3]
         ? "#f03b20"
-        : value > scale[3]
+        : value > scale[2]
           ? "#fd8d3c"
-          : value > scale[2]
-            ? "#feb24c"
-            : value > scale[1]
-              ? "#fed976"
-              : value >= scale[0]
-                ? "#ffffb2"
-                : "grey";
+          : value > scale[1]
+            ? "#fecc5c"
+            : value >= scale[0]
+              ? "#ffffb2"
+              : "grey";
   };
 
-  const geoJsonStyle = (feature) => ({
+  const colorScaleLegendValues = useMemo(() => {
+    const scale = [
+      colorScaleMinMax[0],
+      colorScaleMinMax[0] + (colorScaleMinMax[1] - colorScaleMinMax[0]) * 0.2,
+      colorScaleMinMax[0] + (colorScaleMinMax[1] - colorScaleMinMax[0]) * 0.4,
+      colorScaleMinMax[0] + (colorScaleMinMax[1] - colorScaleMinMax[0]) * 0.6,
+      colorScaleMinMax[0] + (colorScaleMinMax[1] - colorScaleMinMax[0]) * 0.8,
+      colorScaleMinMax[1],
+    ];
+    return scale.map((val) => `$${val.toLocaleString()}`);
+  }, [colorScaleMinMax]);
+
+  const geoJsonStyle = (feature: any) => ({
     fillColor: colorScale(
-      dataMapping[mapColorActiveFilter]
-        ? dataMapping[mapColorActiveFilter][
-            stateAbbvMapping[feature.properties.name]
-          ][activeYear]
+      dataMapping[mapColorActiveFilter as keyof typeof dataMapping]
+        ? dataMapping[mapColorActiveFilter as keyof typeof dataMapping]?.[
+            stateAbbvMapping[feature.properties.name as keyof typeof stateAbbvMapping]
+          ]?.[activeYear] ?? 0
         : 0,
       50000,
     ),
@@ -111,8 +126,8 @@ export default function Home() {
   });
 
   const onEachFeatureHandler = (feature: any, layer: any) => {
-    const stateName = feature.properties.name;
-    const stateAbbv = stateAbbvMapping[stateName];
+    const stateName = feature.properties.name as string;
+    const stateAbbv = stateAbbvMapping[stateName as keyof typeof stateAbbvMapping];
     const autoInfo = autoData ? autoData[stateAbbv][activeYear] : null;
     const creditCardInfo = creditCardData
       ? creditCardData[stateAbbv][activeYear]
@@ -126,7 +141,7 @@ export default function Home() {
     const totalDebtInfo = totalData ? totalData[stateAbbv][activeYear] : null;
 
     layer.on({
-      click: (e) => mapRef.current?.fitBounds(e.target.getBounds()),
+      click: (e: any) => mapRef.current?.fitBounds(e.target.getBounds()),
       pointerover: () => layer.setStyle({ fillOpacity: 1, weight: 2 }),
       pointerout: () => geoJsonRef.current?.resetStyle(),
     });
@@ -134,11 +149,11 @@ export default function Home() {
     layer.bindTooltip(
       `<div>
         <p><b>${stateName}</b></p>
-        ${activeDataFilters.auto ? `<p>Auto Debt Per Capita: $${autoInfo.toLocaleString()}</p>` : ""}
-        ${activeDataFilters.creditCard ? `<p>Credit Card Debt Per Capita: $${creditCardInfo.toLocaleString()}</p>` : ""}
-        ${activeDataFilters.mortgage ? `<p>Mortgage Debt Per Capita: $${mortgageInfo.toLocaleString()}</p>` : ""}
-        ${activeDataFilters.studentLoan ? `<p>Student Loan Debt Per Capita: $${studentLoanInfo.toLocaleString()}</p>` : ""}
-        ${activeDataFilters.total ? `<p>Total Debt Per Capita: $${totalDebtInfo.toLocaleString()}</p>` : ""}
+        ${activeDataFilters.auto && autoInfo ? `<p>Auto Debt Per Capita: $${(autoInfo as number).toLocaleString()}</p>` : ""}
+        ${activeDataFilters.creditCard && creditCardInfo ? `<p>Credit Card Debt Per Capita: $${(creditCardInfo as number).toLocaleString()}</p>` : ""}
+        ${activeDataFilters.mortgage && mortgageInfo ? `<p>Mortgage Debt Per Capita: $${(mortgageInfo as number).toLocaleString()}</p>` : ""}
+        ${activeDataFilters.studentLoan && studentLoanInfo ? `<p>Student Loan Debt Per Capita: $${(studentLoanInfo as number).toLocaleString()}</p>` : ""}
+        ${activeDataFilters.total && totalDebtInfo ? `<p>Total Debt Per Capita: $${(totalDebtInfo as number).toLocaleString()}</p>` : ""}
       </div>`,
       { direction: "top", opacity: 1 },
     );
@@ -150,7 +165,7 @@ export default function Home() {
         component="div"
         sx={{
           position: "absolute",
-          top: 20,
+          top: 10,
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 1000,
@@ -174,12 +189,13 @@ export default function Home() {
         center={[39.8097343, -98.5556199]}
         zoom={4}
         style={{ height: "100vh", width: "100%" }}
+        attributionControl={false}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <Control position="topright">
+        <Control position="bottomright">
           <Box
             component="div"
             sx={{
@@ -203,13 +219,13 @@ export default function Home() {
                   setMapColorActiveFilter(e.target.value);
                   setActiveDataFilters((prev) => {
                     const allFalse = Object.keys(prev).reduce((acc, key) => {
-                      acc[key] = false;
+                      acc[key as keyof typeof prev] = false;
                       return acc;
-                    }, {});
+                    }, {} as typeof prev);
                     const newFilters = {
                       [e.target.value]: true,
                     };
-                    return { ...allFalse, ...newFilters };
+                    return { ...allFalse, ...newFilters } as typeof prev;
                   });
                   setGeoJsonRefreshKey((prev) => prev + 1);
                 }}
@@ -217,7 +233,7 @@ export default function Home() {
               >
                 {Object.keys(dataMapping).map((key) => (
                   <MenuItem key={key} value={key}>
-                    {dataLabels[key]}
+                    {dataLabels[key as keyof typeof dataLabels]}
                   </MenuItem>
                 ))}
               </Select>
@@ -266,21 +282,109 @@ export default function Home() {
                 >
                   <Checkbox
                     size="small"
-                    checked={activeDataFilters[key]}
+                    checked={activeDataFilters[key as keyof typeof activeDataFilters]}
                     onChange={() => {
                       setActiveDataFilters((prev) => ({
                         ...prev,
-                        [key]: !prev[key],
+                        [key]: !prev[key as keyof typeof prev],
                       }));
                       setGeoJsonRefreshKey((prev) => prev + 1);
                     }}
-                    sx={{ pl: 0 }}
+                    sx={{ p: 0.5, pl: 0 }}
                   />
                   <Typography sx={{ marginLeft: "5px", fontSize: "0.875rem" }}>
-                    {dataLabels[key]}
+                    {dataLabels[key as keyof typeof dataLabels]}
                   </Typography>
                 </Box>
               ))}
+            </Box>
+          </Box>
+        </Control>
+        <Control position="bottomleft">
+          <Box
+            component="div"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              p: 2,
+              backgroundColor: "white",
+              borderRadius: 4,
+              boxShadow: 3,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+              Legend
+            </Typography>
+            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="div"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#ffffb2",
+                  marginRight: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: "0.875rem" }}>
+                {`${colorScaleLegendValues[0]} - ${colorScaleLegendValues[1]}`}
+              </Typography>
+            </Box>
+            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="div"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#fecc5c",
+                  marginRight: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: "0.875rem" }}>
+                {`${colorScaleLegendValues[1]} - ${colorScaleLegendValues[2]}`}
+              </Typography>
+            </Box>
+            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="div"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#fd8d3c",
+                  marginRight: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: "0.875rem" }}>
+                {`${colorScaleLegendValues[2]} - ${colorScaleLegendValues[3]}`}
+              </Typography>
+            </Box>
+            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="div"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#f03b20",
+                  marginRight: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: "0.875rem" }}>
+                {`${colorScaleLegendValues[3]} - ${colorScaleLegendValues[4]}`}
+              </Typography>
+            </Box>
+            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                component="div"
+                sx={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#bd0026",
+                  marginRight: 1,
+                }}
+              />
+              <Typography sx={{ fontSize: "0.875rem" }}>
+                {`> ${colorScaleLegendValues[4]}`}
+              </Typography>
             </Box>
           </Box>
         </Control>
@@ -288,11 +392,12 @@ export default function Home() {
           <GeoJSON
             ref={geoJsonRef}
             key={geoJsonRefreshKey}
-            data={statesData}
+            data={statesData as any}
             onEachFeature={onEachFeatureHandler}
             style={geoJsonStyle}
           />
         )}
+        <AttributionControl position="topright" />
       </MapContainer>
     </Box>
   );
