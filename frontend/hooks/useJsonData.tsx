@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
-export function useJsonData(url: string) {
-  const [data, setData] = useState(null);
+export function useJsonData<T>(url: string) {
+  const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,7 +15,7 @@ export function useJsonData(url: string) {
         const jsonData = await response.json();
         setData(jsonData);
       } catch (err) {
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }

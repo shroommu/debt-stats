@@ -111,34 +111,32 @@ export default function Home() {
     return scale.map((val) => `$${val.toLocaleString()}`);
   }, [colorScaleMinMax]);
 
-  const geoJsonStyle = (feature: any) => ({
-    fillColor: colorScale(
-      dataMapping[mapColorActiveFilter as keyof typeof dataMapping]
-        ? dataMapping[mapColorActiveFilter as keyof typeof dataMapping]?.[
-            stateAbbvMapping[feature.properties.name as keyof typeof stateAbbvMapping]
-          ]?.[activeYear] ?? 0
-        : 0,
-      50000,
-    ),
-    fillOpacity: 0.8,
-    color: "black",
-    weight: 1,
-  });
+  const geoJsonStyle = (feature: any) => {
+    const filterData = dataMapping[mapColorActiveFilter as keyof typeof dataMapping];
+    const stateAbbv = stateAbbvMapping[feature.properties.name as keyof typeof stateAbbvMapping];
+    const value = filterData && stateAbbv ? filterData?.[stateAbbv as keyof typeof filterData]?.[activeYear] ?? 0 : 0;
+    return {
+      fillColor: colorScale(value, 50000),
+      fillOpacity: 0.8,
+      color: "black",
+      weight: 1,
+    };
+  };
 
   const onEachFeatureHandler = (feature: any, layer: any) => {
     const stateName = feature.properties.name as string;
     const stateAbbv = stateAbbvMapping[stateName as keyof typeof stateAbbvMapping];
-    const autoInfo = autoData ? autoData[stateAbbv][activeYear] : null;
+    const autoInfo = autoData ? autoData[stateAbbv as keyof typeof autoData][activeYear] : null;
     const creditCardInfo = creditCardData
-      ? creditCardData[stateAbbv][activeYear]
+      ? creditCardData[stateAbbv as keyof typeof creditCardData][activeYear]
       : null;
     const mortgageInfo = mortgageData
-      ? mortgageData[stateAbbv][activeYear]
+      ? mortgageData[stateAbbv as keyof typeof mortgageData][activeYear]
       : null;
     const studentLoanInfo = studentLoanData
-      ? studentLoanData[stateAbbv][activeYear]
+      ? studentLoanData[stateAbbv as keyof typeof studentLoanData][activeYear]
       : null;
-    const totalDebtInfo = totalData ? totalData[stateAbbv][activeYear] : null;
+    const totalDebtInfo = totalData ? totalData[stateAbbv as keyof typeof totalData][activeYear] : null;
 
     layer.on({
       click: (e: any) => mapRef.current?.fitBounds(e.target.getBounds()),
