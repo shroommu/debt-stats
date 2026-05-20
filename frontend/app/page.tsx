@@ -2,16 +2,11 @@
 
 import { useJsonData } from "@/hooks/useJsonData";
 
-import {
-  MapContainer,
-  TileLayer,
-  GeoJSON,
-  AttributionControl,
-} from "react-leaflet";
-import Control from "react-leaflet-custom-control";
 import { statesData, stateAbbvMapping } from "./constants";
 import { useMemo, useRef, useState } from "react";
-import { Box, Checkbox, MenuItem, Select, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import BaseMap from "@/components/BaseMap";
+import BaseMapControls from "@/components/BaseMapControls";
 
 export default function Home() {
   const {
@@ -43,7 +38,9 @@ export default function Home() {
   const geoJsonRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
 
-  const [activeDataFilters, setActiveDataFilters] = useState({
+  const [activeDataFilters, setActiveDataFilters] = useState<{
+    [key: string]: boolean;
+  }>({
     auto: false,
     creditCard: false,
     mortgage: false,
@@ -112,9 +109,17 @@ export default function Home() {
   }, [colorScaleMinMax]);
 
   const geoJsonStyle = (feature: any) => {
-    const filterData = dataMapping[mapColorActiveFilter as keyof typeof dataMapping];
-    const stateAbbv = stateAbbvMapping[feature.properties.name as keyof typeof stateAbbvMapping];
-    const value = filterData && stateAbbv ? filterData?.[stateAbbv as keyof typeof filterData]?.[activeYear] ?? 0 : 0;
+    const filterData =
+      dataMapping[mapColorActiveFilter as keyof typeof dataMapping];
+    const stateAbbv =
+      stateAbbvMapping[
+        feature.properties.name as keyof typeof stateAbbvMapping
+      ];
+    const value =
+      filterData && stateAbbv
+        ? (filterData?.[stateAbbv as keyof typeof filterData]?.[activeYear] ??
+          0)
+        : 0;
     return {
       fillColor: colorScale(value, 50000),
       fillOpacity: 0.8,
@@ -125,8 +130,11 @@ export default function Home() {
 
   const onEachFeatureHandler = (feature: any, layer: any) => {
     const stateName = feature.properties.name as string;
-    const stateAbbv = stateAbbvMapping[stateName as keyof typeof stateAbbvMapping];
-    const autoInfo = autoData ? autoData[stateAbbv as keyof typeof autoData][activeYear] : null;
+    const stateAbbv =
+      stateAbbvMapping[stateName as keyof typeof stateAbbvMapping];
+    const autoInfo = autoData
+      ? autoData[stateAbbv as keyof typeof autoData][activeYear]
+      : null;
     const creditCardInfo = creditCardData
       ? creditCardData[stateAbbv as keyof typeof creditCardData][activeYear]
       : null;
@@ -136,7 +144,9 @@ export default function Home() {
     const studentLoanInfo = studentLoanData
       ? studentLoanData[stateAbbv as keyof typeof studentLoanData][activeYear]
       : null;
-    const totalDebtInfo = totalData ? totalData[stateAbbv as keyof typeof totalData][activeYear] : null;
+    const totalDebtInfo = totalData
+      ? totalData[stateAbbv as keyof typeof totalData][activeYear]
+      : null;
 
     layer.on({
       click: (e: any) => mapRef.current?.fitBounds(e.target.getBounds()),
@@ -159,244 +169,27 @@ export default function Home() {
 
   return (
     <Box component="div" sx={{ height: "100vh", width: "100%" }}>
-      <Box
-        component="div"
-        sx={{
-          position: "absolute",
-          top: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          backgroundColor: "white",
-          gap: 1,
-          p: 2,
-          borderRadius: 4,
-          boxShadow: 3,
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h5">US Personal Debt Map</Typography>
-        <Typography variant="body1" sx={{ fontSize: "0.875rem" }}>
-          A map charting trends in personal debt from 2015 to 2025
-        </Typography>
-      </Box>
-      <MapContainer
-        ref={mapRef}
-        center={[39.8097343, -98.5556199]}
-        zoom={4}
-        style={{ height: "100vh", width: "100%" }}
-        attributionControl={false}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <Control position="bottomright">
-          <Box
-            component="div"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              p: 2,
-              backgroundColor: "white",
-              borderRadius: 4,
-              boxShadow: 3,
-            }}
-          >
-            <Box component="div">
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-                Debt Type
-              </Typography>
-              <Select
-                size="small"
-                value={mapColorActiveFilter}
-                onChange={(e) => {
-                  setMapColorActiveFilter(e.target.value);
-                  setActiveDataFilters((prev) => {
-                    const allFalse = Object.keys(prev).reduce((acc, key) => {
-                      acc[key as keyof typeof prev] = false;
-                      return acc;
-                    }, {} as typeof prev);
-                    const newFilters = {
-                      [e.target.value]: true,
-                    };
-                    return { ...allFalse, ...newFilters } as typeof prev;
-                  });
-                  setGeoJsonRefreshKey((prev) => prev + 1);
-                }}
-                style={{ width: "100%" }}
-              >
-                {Object.keys(dataMapping).map((key) => (
-                  <MenuItem key={key} value={key}>
-                    {dataLabels[key as keyof typeof dataLabels]}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-            <Box component="div">
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-                Year
-              </Typography>
-              <Select
-                size="small"
-                value={activeYear}
-                onChange={(e) => {
-                  setActiveYear(e.target.value);
-                  setGeoJsonRefreshKey((prev) => prev + 1);
-                }}
-                style={{ width: "100%" }}
-              >
-                {[
-                  "2015",
-                  "2016",
-                  "2017",
-                  "2018",
-                  "2019",
-                  "2020",
-                  "2021",
-                  "2022",
-                  "2023",
-                  "2024",
-                  "2025",
-                ].map((year) => (
-                  <MenuItem key={year} value={year}>
-                    {year}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-            <Box component="div">
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-                Show Debt Detail
-              </Typography>
-              {Object.keys(activeDataFilters).map((key) => (
-                <Box
-                  component="div"
-                  key={key}
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  <Checkbox
-                    size="small"
-                    checked={activeDataFilters[key as keyof typeof activeDataFilters]}
-                    onChange={() => {
-                      setActiveDataFilters((prev) => ({
-                        ...prev,
-                        [key]: !prev[key as keyof typeof prev],
-                      }));
-                      setGeoJsonRefreshKey((prev) => prev + 1);
-                    }}
-                    sx={{ p: 0.5, pl: 0 }}
-                  />
-                  <Typography sx={{ marginLeft: "5px", fontSize: "0.875rem" }}>
-                    {dataLabels[key as keyof typeof dataLabels]}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        </Control>
-        <Control position="bottomleft">
-          <Box
-            component="div"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              p: 2,
-              backgroundColor: "white",
-              borderRadius: 4,
-              boxShadow: 3,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-              Legend
-            </Typography>
-            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                component="div"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: "#ffffb2",
-                  marginRight: 1,
-                }}
-              />
-              <Typography sx={{ fontSize: "0.875rem" }}>
-                {`${colorScaleLegendValues[0]} - ${colorScaleLegendValues[1]}`}
-              </Typography>
-            </Box>
-            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                component="div"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: "#fecc5c",
-                  marginRight: 1,
-                }}
-              />
-              <Typography sx={{ fontSize: "0.875rem" }}>
-                {`${colorScaleLegendValues[1]} - ${colorScaleLegendValues[2]}`}
-              </Typography>
-            </Box>
-            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                component="div"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: "#fd8d3c",
-                  marginRight: 1,
-                }}
-              />
-              <Typography sx={{ fontSize: "0.875rem" }}>
-                {`${colorScaleLegendValues[2]} - ${colorScaleLegendValues[3]}`}
-              </Typography>
-            </Box>
-            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                component="div"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: "#f03b20",
-                  marginRight: 1,
-                }}
-              />
-              <Typography sx={{ fontSize: "0.875rem" }}>
-                {`${colorScaleLegendValues[3]} - ${colorScaleLegendValues[4]}`}
-              </Typography>
-            </Box>
-            <Box component="div" sx={{ display: "flex", alignItems: "center" }}>
-              <Box
-                component="div"
-                sx={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: "#bd0026",
-                  marginRight: 1,
-                }}
-              />
-              <Typography sx={{ fontSize: "0.875rem" }}>
-                {`> ${colorScaleLegendValues[4]}`}
-              </Typography>
-            </Box>
-          </Box>
-        </Control>
-        {!totalLoading && (
-          <GeoJSON
-            ref={geoJsonRef}
-            key={geoJsonRefreshKey}
-            data={statesData as any}
-            onEachFeature={onEachFeatureHandler}
-            style={geoJsonStyle}
-          />
-        )}
-        <AttributionControl position="topright" />
-      </MapContainer>
+      <BaseMapControls
+        colorScaleLegendValues={colorScaleLegendValues}
+        dataLabels={dataLabels}
+        dataMapping={dataMapping}
+        mapColorActiveFilter={mapColorActiveFilter}
+        setMapColorActiveFilter={setMapColorActiveFilter}
+        activeYear={activeYear}
+        setActiveYear={setActiveYear}
+        activeDataFilters={activeDataFilters}
+        setActiveDataFilters={setActiveDataFilters}
+        setGeoJsonRefreshKey={setGeoJsonRefreshKey}
+      />
+      <BaseMap
+        data={statesData}
+        mapRef={mapRef}
+        geoJsonRef={geoJsonRef}
+        geoJsonRefreshKey={geoJsonRefreshKey}
+        geoJsonStyle={geoJsonStyle}
+        onEachFeature={onEachFeatureHandler}
+        loading={totalLoading}
+      />
     </Box>
   );
 }
