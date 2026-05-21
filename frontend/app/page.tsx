@@ -4,9 +4,10 @@ import { useJsonData } from "@/hooks/useJsonData";
 
 import { statesData, stateAbbvMapping } from "./constants";
 import { useMemo, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Modal } from "@mui/material";
 import BaseMap from "@/components/BaseMap";
 import BaseMapControls from "@/components/BaseMapControls";
+import StateDetailChart from "@/components/StateDetailChart";
 
 export default function Home() {
   const {
@@ -50,6 +51,7 @@ export default function Home() {
   const [activeYear, setActiveYear] = useState("2025");
   const [mapColorActiveFilter, setMapColorActiveFilter] = useState("total");
   const [geoJsonRefreshKey, setGeoJsonRefreshKey] = useState(0);
+  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   const dataMapping = {
     auto: autoData,
@@ -72,7 +74,7 @@ export default function Home() {
       dataMapping[mapColorActiveFilter as keyof typeof dataMapping] || {},
     ).map((d: any) => d[activeYear]);
     return [Math.min(...values.filter(Boolean)), Math.max(...values)];
-  }, [mapColorActiveFilter, dataMapping, mapColorActiveFilter, activeYear]);
+  }, [mapColorActiveFilter, dataMapping, activeYear]);
 
   const colorScale = (value: number, max: number) => {
     const scale = [
@@ -149,7 +151,10 @@ export default function Home() {
       : null;
 
     layer.on({
-      click: (e: any) => mapRef.current?.fitBounds(e.target.getBounds()),
+      click: (e: any) => {
+        mapRef.current?.fitBounds(e.target.getBounds());
+        setSelectedState(stateName);
+      },
       pointerover: () => layer.setStyle({ fillOpacity: 1, weight: 2 }),
       pointerout: () => geoJsonRef.current?.resetStyle(),
     });
@@ -180,7 +185,23 @@ export default function Home() {
         activeDataFilters={activeDataFilters}
         setActiveDataFilters={setActiveDataFilters}
         setGeoJsonRefreshKey={setGeoJsonRefreshKey}
+        hideControls={!selectedState}
       />
+      <Modal
+        component="div"
+        open={!!selectedState}
+        onClose={() => setSelectedState(null)}
+        aria-labelledby="state-detail-chart-title"
+        aria-describedby="state-detail-chart-description"
+      >
+        <StateDetailChart
+          data={dataMapping as { [key: string]: any }}
+          activeState={selectedState}
+          stateAbbv={
+            stateAbbvMapping[selectedState as keyof typeof stateAbbvMapping]
+          }
+        />
+      </Modal>
       <BaseMap
         data={statesData}
         mapRef={mapRef}
