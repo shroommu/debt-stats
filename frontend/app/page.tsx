@@ -188,6 +188,7 @@ export default function Home() {
         hideControls={!selectedState}
       />
       <Modal
+        component="div"
         open={!!selectedState}
         onClose={() => setSelectedState(null)}
         aria-labelledby="state-detail-chart-title"

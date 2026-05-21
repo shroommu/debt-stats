@@ -84,6 +84,7 @@ export default function BaseMapControls({
             p: 1,
             borderRadius: 24,
             boxShadow: 3,
+            cursor: "pointer",
           }}
         />
       </Fade>
