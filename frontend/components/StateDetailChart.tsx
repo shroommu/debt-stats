@@ -145,7 +145,10 @@ export default function StateDetailChart({
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: 1000,
-        backgroundColor: "white",
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark"
+            ? "rgba(0, 0, 0)"
+            : "rgba(255, 255, 255)",
         opacity: 0.9,
         p: 2,
         borderRadius: 4,

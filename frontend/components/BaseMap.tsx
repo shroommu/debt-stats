@@ -4,6 +4,7 @@ import {
   GeoJSON,
   AttributionControl,
 } from "react-leaflet";
+import { useTheme } from "@mui/material/styles";
 
 export default function BaseMap({
   data,
@@ -22,6 +23,14 @@ export default function BaseMap({
   onEachFeature: any;
   loading: boolean;
 }) {
+  const theme = useTheme();
+
+  const style = theme.palette.mode === "dark" ? "jawg-dark" : "jawg-sunny";
+
+  console.log(
+    `https://api.jawg.io/styles/${style}.json?access-token=${process.env.NEXT_PUBLIC_JAWG_API_KEY}`,
+  );
+
   return (
     <MapContainer
       ref={mapRef}
@@ -31,8 +40,9 @@ export default function BaseMap({
       attributionControl={false}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url={`https://tile.jawg.io/${style}/{z}/{x}/{y}{r}.png?access-token=${process.env.NEXT_PUBLIC_JAWG_API_KEY}`}
+        attribution='&copy; <a href="https://www.jawg.io/">Jawg</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        crossOrigin={true}
       />
       {!loading && (
         <GeoJSON

@@ -8,10 +8,7 @@ import {
   Grow,
   Fade,
 } from "@mui/material";
-import {
-  FilterAltRounded as FilterAltRoundedIcon,
-  ExpandMore as ExpandMoreIcon,
-} from "@mui/icons-material";
+import { FilterAltRounded as FilterAltRoundedIcon } from "@mui/icons-material";
 
 export default function BaseMapControls({
   colorScaleLegendValues,
@@ -56,7 +53,10 @@ export default function BaseMapControls({
             zIndex: 1000,
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             gap: 1,
             p: 2,
             borderRadius: 4,
@@ -79,7 +79,7 @@ export default function BaseMapControls({
             bottom: 10,
             right: 10,
             zIndex: 1000,
-            backgroundColor: "primary.main",
+            backgroundColor: (theme) => theme.palette.primary.main,
             color: "white",
             p: 1,
             borderRadius: 24,
@@ -104,7 +104,10 @@ export default function BaseMapControls({
             flexDirection: "column",
             gap: 2,
             p: 2,
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             borderRadius: 4,
             boxShadow: 3,
           }}
@@ -229,7 +232,10 @@ export default function BaseMapControls({
             flexDirection: "column",
             gap: 1,
             p: 2,
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             borderRadius: 4,
             boxShadow: 3,
           }}
