@@ -1,4 +1,5 @@
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
+import { Close as CloseIcon } from "@mui/icons-material";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,25 +40,31 @@ export default function StateDetailChart({
   data,
   activeState,
   stateAbbv,
+  onClose,
 }: {
   data: { [key: string]: any };
-  activeState: string | null;
+  activeState: string;
   stateAbbv: string;
+  onClose: () => void;
 }) {
+  const theme = useTheme();
+
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top" as const,
       },
       title: {
         display: true,
-        text: activeState
-          ? `${activeState} Debt Detail Chart`
-          : "State Debt Detail Chart",
+        text: `${activeState} Debt Per Capita`,
         font: {
-          size: 36,
+          family: "Roboto, sans-serif",
+          size: 24,
+          weight: 300,
         },
+        color: theme.palette.text.primary,
       },
       tooltip: {
         callbacks: {
@@ -67,6 +74,14 @@ export default function StateDetailChart({
             return `${label}: $${value.toLocaleString()}`;
           },
         },
+        backgroundColor: theme.palette.background.paper,
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.primary,
+        displayColors: false,
+        borderColor: theme.palette.divider,
+        borderWidth: 2,
+        xAlign: "center" as const,
+        yAlign: "bottom" as const,
       },
     },
     scales: {
@@ -90,8 +105,11 @@ export default function StateDetailChart({
             ([key, val]) => years.includes(key),
           ),
         ) as any,
-        borderColor: "rgba(255, 99, 132, 1)",
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: "hsl(60, 50%, 70%)",
+        backgroundColor: "hsl(60, 100%, 85%)",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBorderWidth: 3,
       },
       {
         label: "Credit Card",
@@ -100,8 +118,11 @@ export default function StateDetailChart({
             data.creditCard[stateAbbv as keyof typeof data.creditCard],
           ).filter(([key, val]) => years.includes(key)),
         ) as any,
-        borderColor: "rgba(54, 162, 235, 1)",
-        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderColor: "hsl(41, 50%, 50%)",
+        backgroundColor: "hsl(41, 99%, 68%)",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBorderWidth: 3,
       },
       {
         label: "Mortgage",
@@ -110,8 +131,11 @@ export default function StateDetailChart({
             data.mortgage[stateAbbv as keyof typeof data.mortgage],
           ).filter(([key, val]) => years.includes(key)),
         ) as any,
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "hsl(25, 50%, 45%)",
+        backgroundColor: "hsl(25, 98%, 61%)",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBorderWidth: 3,
       },
       {
         label: "Student Loan",
@@ -120,8 +144,11 @@ export default function StateDetailChart({
             data.studentLoan[stateAbbv as keyof typeof data.studentLoan],
           ).filter(([key, val]) => years.includes(key)),
         ) as any,
-        borderColor: "rgba(153, 102, 255, 1)",
-        backgroundColor: "rgba(153, 102, 255, 0.2)",
+        borderColor: "hsl(8, 50%, 35%)",
+        backgroundColor: "hsl(8, 87%, 53%)",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBorderWidth: 3,
       },
       {
         label: "Total Debt",
@@ -130,8 +157,11 @@ export default function StateDetailChart({
             data.total[stateAbbv as keyof typeof data.total],
           ).filter(([key, val]) => years.includes(key)),
         ) as any,
-        borderColor: "rgba(255, 159, 64, 1)",
-        backgroundColor: "rgba(255, 159, 64, 0.2)",
+        borderColor: "hsl(348, 50%, 25%)",
+        backgroundColor: "hsl(348, 100%, 37%)",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBorderWidth: 3,
       },
     ],
   };
@@ -144,20 +174,40 @@ export default function StateDetailChart({
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        zIndex: 1000,
-        backgroundColor: "white",
-        opacity: 0.9,
+        zIndex: 999,
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark"
+            ? "rgba(0, 0, 0)"
+            : "rgba(255, 255, 255)",
         p: 2,
         borderRadius: 4,
         boxShadow: 3,
         width: "80%",
+        height: { xs: "80%", md: "70%" },
         maxHeight: "80vh",
-        overflow: { sm: "auto", md: "hidden" },
         alignItems: "center",
         display: "flex",
         flexDirection: "column",
       }}
     >
+      <Box component="div" sx={{ position: "relative", width: "100%" }}>
+        <CloseIcon
+          onClick={() => onClose()}
+          fontSize="large"
+          sx={{
+            position: "absolute",
+            top: -35,
+            left: -35,
+            zIndex: 1000,
+            backgroundColor: (theme) => theme.palette.primary.main,
+            color: "white",
+            p: 1,
+            borderRadius: 24,
+            boxShadow: 3,
+            cursor: "pointer",
+          }}
+        />
+      </Box>
       <Line data={chartData} options={options} />
     </Box>
   );

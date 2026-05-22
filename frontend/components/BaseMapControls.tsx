@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Checkbox,
@@ -7,10 +7,12 @@ import {
   Typography,
   Grow,
   Fade,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   FilterAltRounded as FilterAltRoundedIcon,
-  ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
 } from "@mui/icons-material";
 
 export default function BaseMapControls({
@@ -38,7 +40,21 @@ export default function BaseMapControls({
   dataMapping: { [key: string]: any };
   hideControls: boolean;
 }) {
-  const [showFilters, setShowFilters] = useState(true);
+  const theme = useTheme();
+  const deviceIsMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+
+  useEffect(() => {
+    if (!deviceIsMobile) {
+      setShowFilters(true);
+      setShowLegend(true);
+    } else {
+      setShowFilters(false);
+      setShowLegend(false);
+    }
+  }, [deviceIsMobile]);
 
   return (
     <Box
@@ -56,7 +72,10 @@ export default function BaseMapControls({
             zIndex: 1000,
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             gap: 1,
             p: 2,
             borderRadius: 4,
@@ -64,8 +83,24 @@ export default function BaseMapControls({
             alignItems: "center",
           }}
         >
-          <Typography variant="h5">US Personal Debt Map</Typography>
-          <Typography variant="body1" sx={{ fontSize: "0.875rem" }}>
+          <Typography
+            variant="h5"
+            sx={{
+              textAlign: "center",
+              fontSize: { xs: "1rem", md: "1.5rem" },
+              whiteSpace: { xs: "nowrap", md: "normal" },
+            }}
+          >
+            US Personal Debt Map
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "0.875rem",
+              display: { xs: "none", md: "block" },
+              textAlign: "center",
+            }}
+          >
             A map charting trends in personal debt from 2015 to 2025
           </Typography>
         </Box>
@@ -79,7 +114,7 @@ export default function BaseMapControls({
             bottom: 10,
             right: 10,
             zIndex: 1000,
-            backgroundColor: "primary.main",
+            backgroundColor: (theme) => theme.palette.primary.main,
             color: "white",
             p: 1,
             borderRadius: 24,
@@ -97,14 +132,17 @@ export default function BaseMapControls({
           component="div"
           sx={{
             position: "absolute",
-            bottom: 20,
-            right: 20,
+            bottom: 30,
+            right: 30,
             zIndex: 999,
             display: "flex",
             flexDirection: "column",
             gap: 2,
             p: 2,
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             borderRadius: 4,
             boxShadow: 3,
           }}
@@ -218,18 +256,43 @@ export default function BaseMapControls({
         </Box>
       </Grow>
       <Fade in={hideControls} timeout={500}>
-        <Box
-          component="div"
+        <InfoIcon
+          fontSize="large"
+          onClick={() => setShowLegend((prev) => !prev)}
           sx={{
             position: "absolute",
             bottom: 10,
             left: 10,
             zIndex: 1000,
+            backgroundColor: (theme) => theme.palette.primary.main,
+            color: "white",
+            p: 1,
+            borderRadius: 24,
+            boxShadow: 3,
+            cursor: "pointer",
+          }}
+        />
+      </Fade>
+      <Grow
+        in={showLegend && hideControls}
+        timeout={500}
+        style={{ transformOrigin: "bottom left 0" }}
+      >
+        <Box
+          component="div"
+          sx={{
+            position: "absolute",
+            bottom: 30,
+            left: 30,
+            zIndex: 999,
             display: "flex",
             flexDirection: "column",
             gap: 1,
             p: 2,
-            backgroundColor: "white",
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0, 0, 0, 0.9)"
+                : "rgba(255, 255, 255, 0.95)",
             borderRadius: 4,
             boxShadow: 3,
           }}
@@ -314,7 +377,7 @@ export default function BaseMapControls({
             </Typography>
           </Box>
         </Box>
-      </Fade>
+      </Grow>
     </Box>
   );
 }
