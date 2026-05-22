@@ -59,7 +59,7 @@ export default function BaseMapControls({
   return (
     <Box
       component="div"
-      sx={{ position: "absolute", height: "100vh", width: "100%" }}
+      sx={{ position: "absolute", height: "100dvh", width: "100dvw" }}
     >
       <Fade in={hideControls} timeout={500}>
         <Box
