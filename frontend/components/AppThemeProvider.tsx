@@ -18,6 +18,12 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     },
     palette: {
       mode: userPrefersDarkMode ? "dark" : "light",
+      primary: {
+        main: "#bf7b28",
+      },
+      secondary: {
+        main: "#97761c",
+      },
     },
   });
 
