@@ -27,10 +27,6 @@ export default function BaseMap({
 
   const style = theme.palette.mode === "dark" ? "jawg-dark" : "jawg-sunny";
 
-  console.log(
-    `https://api.jawg.io/styles/${style}.json?access-token=${process.env.NEXT_PUBLIC_JAWG_API_KEY}`,
-  );
-
   return (
     <MapContainer
       ref={mapRef}
