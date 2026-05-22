@@ -4,7 +4,7 @@ import { useJsonData } from "@/hooks/useJsonData";
 
 import { statesData, stateAbbvMapping } from "./constants";
 import { useMemo, useRef, useState } from "react";
-import { Box, Modal } from "@mui/material";
+import { Box, Fade, Modal } from "@mui/material";
 import BaseMap from "@/components/BaseMap";
 import BaseMapControls from "@/components/BaseMapControls";
 import StateDetailChart from "@/components/StateDetailChart";
@@ -39,6 +39,8 @@ export default function Home() {
   const geoJsonRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
 
+  const defaultBounds = mapRef.current?.getBounds();
+
   const [activeDataFilters, setActiveDataFilters] = useState<{
     [key: string]: boolean;
   }>({
@@ -51,7 +53,8 @@ export default function Home() {
   const [activeYear, setActiveYear] = useState("2025");
   const [mapColorActiveFilter, setMapColorActiveFilter] = useState("total");
   const [geoJsonRefreshKey, setGeoJsonRefreshKey] = useState(0);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [selectedState, setSelectedState] = useState("Utah");
+  const [showStateDetail, setShowStateDetail] = useState(false);
 
   const dataMapping = {
     auto: autoData,
@@ -152,8 +155,9 @@ export default function Home() {
 
     layer.on({
       click: (e: any) => {
-        mapRef.current?.fitBounds(e.target.getBounds());
+        mapRef.current?.flyToBounds(e.target.getBounds(), { duration: 1 });
         setSelectedState(stateName);
+        setShowStateDetail(true);
       },
       pointerover: () => layer.setStyle({ fillOpacity: 1, weight: 2 }),
       pointerout: () => geoJsonRef.current?.resetStyle(),
@@ -172,6 +176,13 @@ export default function Home() {
     );
   };
 
+  const returnToDefaultView = () => {
+    setShowStateDetail(false);
+    mapRef.current?.flyToBounds(defaultBounds, {
+      duration: 1,
+    });
+  };
+
   return (
     <Box component="div" sx={{ height: "100vh", width: "100%" }}>
       <BaseMapControls
@@ -185,22 +196,32 @@ export default function Home() {
         activeDataFilters={activeDataFilters}
         setActiveDataFilters={setActiveDataFilters}
         setGeoJsonRefreshKey={setGeoJsonRefreshKey}
-        hideControls={!selectedState}
+        hideControls={!showStateDetail}
       />
       <Modal
         component="div"
-        open={!!selectedState}
-        onClose={() => setSelectedState(null)}
+        open={showStateDetail}
+        onClose={() => {
+          returnToDefaultView();
+        }}
+        closeAfterTransition
         aria-labelledby="state-detail-chart-title"
         aria-describedby="state-detail-chart-description"
       >
-        <StateDetailChart
-          data={dataMapping as { [key: string]: any }}
-          activeState={selectedState}
-          stateAbbv={
-            stateAbbvMapping[selectedState as keyof typeof stateAbbvMapping]
-          }
-        />
+        <Fade in={showStateDetail} timeout={1000}>
+          <Box>
+            <StateDetailChart
+              data={dataMapping as { [key: string]: any }}
+              activeState={selectedState}
+              onClose={() => {
+                returnToDefaultView();
+              }}
+              stateAbbv={
+                stateAbbvMapping[selectedState as keyof typeof stateAbbvMapping]
+              }
+            />
+          </Box>
+        </Fade>
       </Modal>
       <BaseMap
         data={statesData}
