@@ -51,6 +51,7 @@ export default function StateDetailChart({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top" as const,
@@ -182,8 +183,8 @@ export default function StateDetailChart({
         borderRadius: 4,
         boxShadow: 3,
         width: "80%",
+        height: { xs: "80%", md: "70%" },
         maxHeight: "80vh",
-        // overflow: { sm: "auto", md: "hidden" },
         alignItems: "center",
         display: "flex",
         flexDirection: "column",
