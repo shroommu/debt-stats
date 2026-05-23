@@ -197,6 +197,7 @@ export default function Home() {
         setActiveDataFilters={setActiveDataFilters}
         setGeoJsonRefreshKey={setGeoJsonRefreshKey}
         hideControls={!showStateDetail}
+        mapRef={mapRef}
       />
       <Modal
         component="div"
