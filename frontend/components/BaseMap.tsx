@@ -49,7 +49,7 @@ export default function BaseMap({
       center={[39.8097343, -98.5556199]}
       zoom={4}
       zoomControl={showZoom}
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100svh", width: "100svw" }}
       attributionControl={false}
     >
       <TileLayer
