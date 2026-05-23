@@ -61,8 +61,13 @@ export default function BaseMapControls({
       component="div"
       sx={{
         position: "absolute",
+        zIndex: 999,
         height: { xs: "100svh", md: "100dvh" },
         width: { xs: "100svw", md: "100dvw" },
+      }}
+      onClick={() => {
+        if (showFilters) setShowFilters(false);
+        if (showLegend) setShowLegend(false);
       }}
     >
       <Fade in={hideControls} timeout={500}>
@@ -93,6 +98,7 @@ export default function BaseMapControls({
               textAlign: "center",
               fontSize: { xs: "1rem", md: "1.5rem" },
               whiteSpace: { xs: "nowrap", md: "normal" },
+              fontWeight: "bold",
             }}
           >
             US Personal Debt Map
@@ -111,8 +117,9 @@ export default function BaseMapControls({
       </Fade>
       <Fade in={hideControls} timeout={500}>
         <FilterAltRoundedIcon
-          fontSize="large"
-          onClick={() => setShowFilters((prev) => !prev)}
+          onClick={() => {
+            setShowFilters((prev) => !prev);
+          }}
           sx={{
             position: "absolute",
             bottom: 10,
@@ -124,6 +131,7 @@ export default function BaseMapControls({
             borderRadius: 24,
             boxShadow: 3,
             cursor: "pointer",
+            fontSize: { xs: "3rem", md: "2rem" },
           }}
         />
       </Fade>
@@ -261,7 +269,6 @@ export default function BaseMapControls({
       </Grow>
       <Fade in={hideControls} timeout={500}>
         <InfoIcon
-          fontSize="large"
           onClick={() => setShowLegend((prev) => !prev)}
           sx={{
             position: "absolute",
@@ -274,6 +281,7 @@ export default function BaseMapControls({
             borderRadius: 24,
             boxShadow: 3,
             cursor: "pointer",
+            fontSize: { xs: "3rem", md: "2rem" },
           }}
         />
       </Fade>
