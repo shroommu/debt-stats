@@ -27,6 +27,7 @@ export default function BaseMapControls({
   setGeoJsonRefreshKey,
   dataMapping,
   hideControls,
+  mapRef,
 }: {
   colorScaleLegendValues: string[];
   dataLabels: { [key: string]: string };
@@ -39,12 +40,18 @@ export default function BaseMapControls({
   setGeoJsonRefreshKey: (value: number) => void;
   dataMapping: { [key: string]: any };
   hideControls: boolean;
+  mapRef: any;
 }) {
   const theme = useTheme();
   const deviceIsMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [showFilters, setShowFilters] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
+
+  mapRef.current?.on("click", () => {
+    if (showFilters) setShowFilters(false);
+    if (showLegend) setShowLegend(false);
+  });
 
   useEffect(() => {
     if (!deviceIsMobile) {
@@ -61,13 +68,8 @@ export default function BaseMapControls({
       component="div"
       sx={{
         position: "absolute",
-        zIndex: 999,
         height: { xs: "100svh", md: "100dvh" },
         width: { xs: "100svw", md: "100dvw" },
-      }}
-      onClick={() => {
-        if (showFilters) setShowFilters(false);
-        if (showLegend) setShowLegend(false);
       }}
     >
       <Fade in={hideControls} timeout={500}>
