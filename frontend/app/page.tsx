@@ -184,7 +184,7 @@ export default function Home() {
   };
 
   return (
-    <Box component="div" sx={{ height: "100dvh", width: "100dvw" }}>
+    <Box component="div" sx={{ height: "100svh", width: "100svw" }}>
       <BaseMapControls
         colorScaleLegendValues={colorScaleLegendValues}
         dataLabels={dataLabels}
